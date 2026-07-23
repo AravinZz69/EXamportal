@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Online Examination Management System</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#f2f5f9;
+}
+
+header{
+    background:#2563eb;
+    color:white;
+    padding:20px;
+    text-align:center;
+}
+
+.container{
+    width:90%;
+    max-width:1000px;
+    margin:30px auto;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 5px 15px #ccc;
+    margin-bottom:20px;
+}
+
+input,select,button,textarea{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border-radius:5px;
+    border:1px solid #ccc;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+    border:none;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.hidden{
+    display:none;
+}
+
+.option{
+    margin:10px 0;
+    padding:10px;
+    background:#f1f5f9;
+    border-radius:5px;
+}
+
+.question{
+    padding:15px;
+    background:#eef2ff;
+    margin:15px 0;
+    border-radius:8px;
+}
+
+.nav{
+    display:flex;
+    justify-content:space-between;
+    background:#111827;
+    color:white;
+    padding:10px;
+}
+
+.nav button{
+    width:auto;
+    background:#ef4444;
+}
+
+.result{
+    background:#dcfce7;
+    padding:15px;
+    border-radius:8px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+<h1>Online Examination Management System</h1>
+<p>Digital MCQ Examination Platform</p>
+</header>
+
+
+<div class="container">
+
+
+<!-- AUTH SECTION -->
+
+<div id="auth">
+
+
+<div class="card">
+
+<h2>Register</h2>
+
+
+<input id="rname" placeholder="Full Name">
+
+<input id="remail" placeholder="Email">
+
+<input id="rpassword" type="password" placeholder="Password">
+
+
+<select id="rrole">
+
+<option value="student">
+Student
+</option>
+
+<option value="teacher">
+Teacher
+</option>
+
+</select>
+
+
+<button onclick="register()">
+Create Account
+</button>
+
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>Login</h2>
+
+
+<input id="lemail" placeholder="Email">
+
+
+<input id="lpassword" type="password" placeholder="Password">
+
+
+<button onclick="login()">
+Login
+</button>
+
+
+</div>
+
+
+</div>
+
+  <!-- MAIN APPLICATION -->
+
+<div id="app" class="hidden">
+
+
+<div class="nav">
+
+<span id="welcome"></span>
+
+<button onclick="logout()">
+Logout
+</button>
+
+</div>
+
+
+
+<!-- TEACHER DASHBOARD -->
+
+<div id="teacherPanel" class="hidden">
+
+
+<div class="card">
+
+<h2>Teacher Dashboard</h2>
+
+<h3>Add New MCQ Question</h3>
+
+
+<textarea id="questionText" placeholder="Enter question"></textarea>
+
+
+<input id="option1" placeholder="Option A">
+
+<input id="option2" placeholder="Option B">
+
+<input id="option3" placeholder="Option C">
+
+<input id="option4" placeholder="Option D">
+
+
+<input id="correctAnswer" placeholder="Correct Answer">
+
+
+<button onclick="addQuestion()">
+Add Question
+</button>
+
+
+</div>
+
+
+
+<div class="card">
+
+<h2>Student Results</h2>
+
+
+<button onclick="loadResults()">
+View Results
+</button>
+
+
+<div id="teacherResults"></div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<!-- STUDENT DASHBOARD -->
+
+
+<div id="studentPanel" class="hidden">
+
+
+<div class="card">
+
+
+<h2>Student Dashboard</h2>
+
+
+<h3>Available Examination</h3>
+
+
+<p>
+Complete all questions and submit.
+</p>
+
+
+<button onclick="startExam()">
+Start Exam
+</button>
+
+
+</div>
+
+
+
+
+
+
+<div id="examBox" class="card hidden">
+
+
+<h2>MCQ Examination</h2>
+
+
+<div id="timer">
+
+Time Remaining:
+<span id="time">
+300
+</span>
+seconds
+
+</div>
+
+
+
+<div id="questions">
+
+</div>
+
+
+
+<button onclick="submitExam()">
+
+Submit Exam
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+
+
+<div class="card">
+
+
+<h2>Your Result</h2>
+
+
+<button onclick="loadResults()">
+
+View My Result
+
+</button>
+
+
+<div id="studentResults"></div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+let currentUser=null;
+
+let examQuestions=[];
+
+let timer;
+
+<script>
+
+
+// ---------------- REGISTER ----------------
+
+async function register(){
+
+    let data={
+        name:document.getElementById("rname").value,
+        email:document.getElementById("remail").value,
+        password:document.getElementById("rpassword").value,
+        role:document.getElementById("rrole").value
+    };
+
+
+    let res=await fetch("/register",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify(data)
+
+    });
+
+
+    let result=await res.json();
+
+
+    alert(result.message);
+
+
+}
+
+
+
+
+
+
+
+// ---------------- LOGIN ----------------
+
+
+async function login(){
+
+
+    let data={
+
+        email:document.getElementById("lemail").value,
+
+        password:document.getElementById("lpassword").value
+
+    };
+
+
+    let res=await fetch("/login",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify(data)
+
+    });
+
+
+    let result=await res.json();
+
+
+    if(result.success){
+
+
+        currentUser=result.user;
+
+
+        document.getElementById("auth").classList.add("hidden");
+
+
+        document.getElementById("app").classList.remove("hidden");
+
+
+        document.getElementById("welcome").innerHTML=
+        "Welcome "+currentUser.name;
+
+
+
+        if(currentUser.role==="teacher"){
+
+            document.getElementById("teacherPanel")
+            .classList.remove("hidden");
+
+        }
+        else{
+
+            document.getElementById("studentPanel")
+            .classList.remove("hidden");
+
+        }
+
+
+    }
+
+    else{
+
+        alert(result.message);
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+// ---------------- LOGOUT ----------------
+
+
+async function logout(){
+
+
+    await fetch("/logout");
+
+
+    location.reload();
+
+
+}
+
+
+
+
+
+
+
+
+// ---------------- TEACHER ADD QUESTION ----------------
+
+
+async function addQuestion(){
+
+
+
+let data={
+
+
+question:
+document.getElementById("questionText").value,
+
+
+options:[
+
+document.getElementById("option1").value,
+
+document.getElementById("option2").value,
+
+document.getElementById("option3").value,
+
+document.getElementById("option4").value
+
+],
+
+
+answer:
+document.getElementById("correctAnswer").value
+
+
+};
+
+
+
+let res=await fetch("/add-question",{
+
+
+method:"POST",
+
+
+headers:{
+
+
+"Content-Type":"application/json"
+
+
+},
+
+
+body:JSON.stringify(data)
+
+
+});
+
+
+
+let result=await res.json();
+
+
+
+alert(result.message);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ---------------- START EXAM ----------------
+
+
+async function startExam(){
+
+
+let res=await fetch("/questions");
+
+
+examQuestions=await res.json();
+
+
+
+let box=document.getElementById("questions");
+
+
+box.innerHTML="";
+
+
+
+examQuestions.forEach((q,index)=>{
+
+
+let html=`
+
+
+<div class="question">
+
+
+<h3>
+${index+1}. ${q.question}
+</h3>
+
+
+`;
+
+
+
+q.options.forEach(option=>{
+
+
+html+=`
+
+
+<div class="option">
+
+
+<label>
+
+
+<input 
+
+type="radio"
+
+name="q${index}"
+
+value="${option}">
+
+
+${option}
+
+
+</label>
+
+
+</div>
+
+
+`;
+
+
+});
+
+
+
+html+="</div>";
+
+
+
+box.innerHTML+=html;
+
+
+
+});
+
+
+
+
+document.getElementById("examBox")
+.classList.remove("hidden");
+
+
+
+startTimer();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+// ---------------- TIMER ----------------
+
+
+function startTimer(){
+
+
+let seconds=300;
+
+
+document.getElementById("time")
+.innerHTML=seconds;
+
+
+
+timer=setInterval(()=>{
+
+
+seconds--;
+
+
+document.getElementById("time")
+.innerHTML=seconds;
+
+
+
+if(seconds<=0){
+
+
+clearInterval(timer);
+
+
+submitExam();
+
+
+}
+
+
+},1000);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+// ---------------- SUBMIT EXAM ----------------
+
+
+async function submitExam(){
+
+
+
+clearInterval(timer);
+
+
+
+let answers=[];
+
+
+
+examQuestions.forEach((q,index)=>{
+
+
+let selected=document.querySelector(
+`input[name="q${index}"]:checked`
+);
+
+
+
+if(selected)
+
+answers.push(selected.value);
+
+else
+
+answers.push("");
+
+
+
+});
+
+
+
+
+
+let res=await fetch("/submit",{
+
+
+method:"POST",
+
+
+headers:{
+
+
+"Content-Type":"application/json"
+
+
+},
+
+
+body:JSON.stringify({
+
+answers
+
+})
+
+
+});
+
+
+
+let result=await res.json();
+
+
+
+alert(
+
+"Your Score : "+
+result.score+
+"/"+
+result.total
+
+);
+
+
+
+document.getElementById("examBox")
+.classList.add("hidden");
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ---------------- RESULTS ----------------
+
+
+async function loadResults(){
+
+
+
+let res=await fetch("/results");
+
+
+let data=await res.json();
+
+
+
+let html="";
+
+
+
+data.forEach(r=>{
+
+
+html+=`
+
+
+<div class="result">
+
+
+Student:
+${r.student}
+
+<br>
+
+
+Score:
+${r.score}/${r.total}
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+
+
+if(currentUser.role==="teacher"){
+
+
+document.getElementById("teacherResults")
+.innerHTML=html;
+
+
+}
+
+else{
+
+
+document.getElementById("studentResults")
+.innerHTML=html;
+
+
+}
+
+
+
+}
+
+
+
+
+
+</script>
+
+
+</body>
+
+</html>
+  
+
+
